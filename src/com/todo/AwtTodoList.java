@@ -1,41 +1,25 @@
 package com.todo;
 
-import java.awt.Button;
-import java.awt.Frame;
-import java.awt.GridLayout;
-import java.awt.Label;
-import java.awt.List;
-import java.awt.Panel;
-import java.awt.TextField;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.*;
+import java.awt.event.*;
 
 public class AwtTodoList {
     private Frame window = new Frame("AwtTodoList");
     private Button addItem = new Button("Add Item");
     private Button removeItem = new Button("Remove");
-    private Button doItem = new Button("Done");
-    private TextField textField = new TextField(20);
+    private TextField textField = new TextField(40);
     private Label label = new Label("Item:");
-    private Label itemStatus = new Label("");
-    private Label title = new Label("Todo items:");
-    private Panel crawlPanel = new Panel();
+    private Choice statusChoice = new Choice();
+    private Panel actionPanel = new Panel();
     private List resultList = new List(20, false);
-
     private TodoList todoList = new TodoList();
 
-    private void updateStatusView() {
-        itemStatus
-                .setText(todoList.getItemStatus(resultList.getSelectedItem()));
-    }
-
     public AwtTodoList() {
+        initStatusChoice();
+        initActionPanel();
+        initResultList();
+
+        window.setResizable(false);
         window.setSize(600, 300);
         window.addWindowListener(new WindowAdapter() {
             @Override
@@ -43,63 +27,39 @@ public class AwtTodoList {
                 System.exit(0);
             }
         });
-        window.setLayout(new GridLayout(4, 1));
+        window.setLayout(new BorderLayout());
 
-        resultList.addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                updateStatusView();
-            }
+        window.add(statusChoice, BorderLayout.NORTH);
+        window.add(resultList, BorderLayout.CENTER);
+        window.add(actionPanel, BorderLayout.SOUTH);
+    }
 
-            @Override
-            public void focusLost(FocusEvent e) {
-                updateStatusView();
-            }
-        });
+    private void updateStatusView() {
+        statusChoice.select(todoList.getItemStatus(resultList.getSelectedItem()));
+    }
 
-        resultList.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                updateStatusView();
-            }
-        });
+    private void initStatusChoice() {
+        for (Status title : Status.values()) {
+            statusChoice.add(title.getTitle());
+        }
 
-        resultList.addMouseListener(new MouseListener() {
+        statusChoice.addItemListener(new ItemListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                updateStatusView();
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                // To change body of implemented methods use File | Settings |
-                // File Templates.
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                // To change body of implemented methods use File | Settings |
-                // File Templates.
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                // To change body of implemented methods use File | Settings |
-                // File Templates.
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                // To change body of implemented methods use File | Settings |
-                // File Templates.
+            public void itemStateChanged(ItemEvent e) {
+                int index = resultList.getSelectedIndex();
+                if (index >= 0) {
+                    todoList.setStatus(resultList.getSelectedItem(), statusChoice.getSelectedItem());
+                }
             }
         });
+    }
 
+    private void initActionPanel() {
         addItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String item = textField.getText();
-                todoList.addItem(item, "Waiting");
+                todoList.addItem(item, Status.WAITING.getTitle());
                 resultList.add(item);
                 textField.setText("");
             }
@@ -117,28 +77,38 @@ public class AwtTodoList {
             }
         });
 
-        doItem.addActionListener(new ActionListener() {
+        actionPanel.add(label);
+        actionPanel.add(textField);
+        actionPanel.add(addItem);
+        actionPanel.add(removeItem);
+    }
+
+    private void initResultList() {
+        resultList.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int index = resultList.getSelectedIndex();
-                if (index >= 0) {
-                    String item = resultList.getSelectedItem();
-                    todoList.doItem(item);
-                    updateStatusView();
-                }
+                updateStatusView();
             }
         });
 
-        crawlPanel.add(label);
-        crawlPanel.add(textField);
-        crawlPanel.add(addItem);
-        crawlPanel.add(removeItem);
-        crawlPanel.add(doItem);
+        resultList.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                updateStatusView();
+            }
 
-        window.add(title);
-        window.add(itemStatus);
-        window.add(resultList);
-        window.add(crawlPanel);
+            @Override
+            public void mousePressed(MouseEvent e) {}
+
+            @Override
+            public void mouseReleased(MouseEvent e) {}
+
+            @Override
+            public void mouseEntered(MouseEvent e) {}
+
+            @Override
+            public void mouseExited(MouseEvent e) {}
+        });
     }
 
     public void run() {
@@ -149,4 +119,5 @@ public class AwtTodoList {
         AwtTodoList awtUrlCrawler = new AwtTodoList();
         awtUrlCrawler.run();
     }
+
 }

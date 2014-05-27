@@ -15,10 +15,6 @@ public class TodoList {
         return todos.get(item);
     }
 
-    public String doItem(String item) {
-        return todos.put(item, "Done");
-    }
-
     public void removeItem(String item) {
         todos.remove(item);
     }
@@ -27,4 +23,7 @@ public class TodoList {
         return Collections.unmodifiableMap(todos);
     }
 
+    public void setStatus(String selectedItem, String status) {
+        todos.put(selectedItem, status);
+    }
 }
